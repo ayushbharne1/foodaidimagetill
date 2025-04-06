@@ -10,11 +10,14 @@ const authRoutes = require("./routes/auth.js");
 const adminRoutes = require("./routes/admin.js");
 const donorRoutes = require("./routes/donor.js");
 const agentRoutes = require("./routes/agent.js");
+const cloudinary = require("./config/cloudinary.js");
+const mapsConfig = require("./config/maps.js");
 require("dotenv").config();
 require("./config/dbConnection.js")();
 require("./config/passport.js")(passport);
 
-
+// Set up environment variables
+process.env.GOOGLE_MAPS_API_KEY = mapsConfig.apiKey;
 
 app.set("view engine", "ejs");
 app.use(expressLayouts);
@@ -35,6 +38,7 @@ app.use((req, res, next) => {
 	res.locals.error = req.flash("error");
 	res.locals.success = req.flash("success");
 	res.locals.warning = req.flash("warning");
+	res.locals.info = req.flash("info");
 	next();
 });
 

@@ -7,48 +7,89 @@
 			<h5 class="m-0 color-theme d-inline-block">Donate</h5>
 		</div>
 		
-		<form action="/donor/donate" method="POST" enctype="multipart/form-data" class="border m-4 my-3 p-4 bg-white rounded-2 shadow">
+		<form action="/donor/donate" method="POST" enctype="multipart/form-data" class="border m-4 my-3 p-4 bg-white rounded-2 shadow" onsubmit="return validateForm()">
 			<div class="mb-4">
-				<label for="food" class="form-label">Food type</label>
-				<input type="text" name="foodType" class="form-control" id="food" placeholder="Enter food.." required autofocus>
+				<label for="food" class="form-label fw-bold">Food type</label>
+				<input type="text" name="foodType" class="form-control form-control-lg" id="food" placeholder="Enter food type (e.g., Biryani, Pizza, etc.)" required autofocus>
 			</div>
 			
 			<div class="mb-4">
-				<label for="image" class="form-label">Food Image</label>
-				<input type="file" name="image" class="form-control" id="image" accept="image/*" required>
-				<small class="text-muted">Upload a clear image of the food (max 5MB)</small>
+				<label for="image" class="form-label fw-bold">Food Image</label>
+				<div class="input-group">
+					<input type="file" name="image" class="form-control form-control-lg" id="image" accept="image/*" required>
+					<button class="btn btn-outline-secondary" type="button" id="imagePreviewBtn" style="display: none;">
+						<i class="fas fa-eye"></i> Preview
+					</button>
+				</div>
+				<small class="text-muted d-block mt-1"><i class="fas fa-info-circle"></i> Upload a clear image of the food (max 5MB)</small>
+				<div id="imagePreview" class="mt-2 text-center" style="display: none;">
+					<img src="" alt="Food Preview" class="img-thumbnail" style="max-height: 200px;">
+				</div>
 			</div>
 			
 			<div class="row">
 				<div class="mb-4 col-sm-6">
-					<label for="quantity" class="form-label">Quantity</label>
-					<input type="text" name="quantity" class="form-control" id="quantity" placeholder="Enter quantity of food.." required>
+					<label for="quantity" class="form-label fw-bold">Quantity</label>
+					<div class="input-group">
+						<input type="text" name="quantity" class="form-control form-control-lg" id="quantity" placeholder="Enter quantity.." required>
+						<span class="input-group-text">portions</span>
+					</div>
 				</div>
 				
 				<div class="mb-4 col-sm-6">
-					<label for="time" class="form-label">Time of cooking</label>
-					<input type="datetime-local" name="cookingTime" class="form-date-input" id="time" required>
+					<label for="time" class="form-label fw-bold">Time of cooking</label>
+					<input type="datetime-local" name="cookingTime" class="form-control form-control-lg" id="time" required>
 				</div>
 			</div>
 			
 			<div class="row">
 				<div class="mb-4 col-sm-8">
-					<label for="address" class="form-label">Address to collect</label>
-					<input type="text" name="address" class="form-control" id="address" placeholder="Enter address.." value="<%= currentUser.address %>" required>
+					<label for="address" class="form-label fw-bold">Address to collect</label>
+					<div class="input-group">
+						<input type="text" name="address" class="form-control form-control-lg" id="address" placeholder="Enter address.." value="<%= currentUser.address %>" required>
+						<button type="button" class="btn btn-outline-primary" onclick="searchLocation()">
+							<i class="fas fa-search"></i>
+						</button>
+					</div>
 				</div>
 				
 				<div class="mb-4 col-sm-4">
-					<label for="phone" class="form-label">Phone</label>
-					<input type="number" name="phone" class="form-control" id="phone" placeholder="Enter phone.." value="<%= currentUser.phone %>" required>
+					<label for="phone" class="form-label fw-bold">Phone</label>
+					<input type="number" name="phone" class="form-control form-control-lg" id="phone" placeholder="Enter phone.." value="<%= currentUser.phone %>" required>
 				</div>
 			</div>
-			
+
 			<div class="mb-4">
-				<label for="msg" class="form-label">Want to write some message?</label>
-				<textarea type="text" name="donorToAdminMsg" class="form-control" id="msg" placeholder="You can write here some msg.."></textarea>
+				<label class="form-label fw-bold">Select Location on Map</label>
+				<div class="d-flex justify-content-between mb-2">
+					<button type="button" class="btn btn-primary btn-lg" onclick="getCurrentLocation()" id="currentLocationBtn">
+						<i class="fas fa-map-marker-alt me-2"></i>Use My Current Location
+					</button>
+					<button type="button" class="btn btn-secondary btn-lg" onclick="searchLocation()">
+						<i class="fas fa-search me-2"></i>Search Location
+					</button>
+				</div>
+				<div id="map" style="height: 400px; width: 100%; border-radius: 8px; position: relative; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+					<div id="mapLoading" class="position-absolute top-50 start-50 translate-middle text-center" style="display: none;">
+						<div class="spinner-border text-primary" role="status">
+							<span class="visually-hidden">Loading...</span>
+						</div>
+						<p class="mt-2">Loading map...</p>
+					</div>
+				</div>
+				<input type="hidden" name="latitude" id="latitude" required>
+				<input type="hidden" name="longitude" id="longitude" required>
+				<div id="locationStatus" class="mt-2 text-muted"></div>
+			</div>
+
+			<div class="mb-4">
+				<label for="message" class="form-label fw-bold">Message to admin</label>
+				<textarea name="donorToAdminMsg" class="form-control form-control-lg" id="message" rows="3" placeholder="Enter any special instructions or notes for the admin.."></textarea>
 			</div>
 			
-			<button type="submit" class="btn w-75 d-block m-auto mt-4">Submit</button>
+			<button type="submit" class="btn btn-primary btn-lg w-75 d-block m-auto mt-4">
+				<i class="fas fa-paper-plane me-2"></i>Submit Donation
+			</button>
 		</form>
 		
 	</div>
@@ -58,4 +99,217 @@
 	const d = new Date();
 	const dateString = d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2) + "T" + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
 	document.getElementById("time").value = dateString;
+
+	let map;
+	let marker;
+	let geocoder;
+	let autocomplete;
+	let isLocationSet = false;
+	let geolocationTimeout;
+	let infoWindow;
+
+	// Initialize map with optimized settings
+	function initMap() {
+		document.getElementById("mapLoading").style.display = "block";
+		
+		// Create map with minimal controls and optimized settings
+		map = new google.maps.Map(document.getElementById("map"), {
+			center: { lat: 20.5937, lng: 78.9629 },
+			zoom: 5,
+			disableDefaultUI: true,
+			zoomControl: true,
+			gestureHandling: 'greedy',
+			styles: [
+				{
+					"featureType": "poi",
+					"elementType": "labels",
+					"stylers": [{ "visibility": "off" }]
+				}
+			]
+		});
+
+		// Create marker with optimized settings
+		marker = new google.maps.Marker({
+			map: map,
+			draggable: true,
+			optimized: true
+		});
+
+		// Create info window for marker
+		infoWindow = new google.maps.InfoWindow({
+			content: `<div class="p-2">
+				<h6 class="mb-1">Donor: <%= currentUser.firstName %> <%= currentUser.lastName %></h6>
+				<p class="mb-0 small text-muted">Click and drag to adjust location</p>
+			</div>`
+		});
+
+		// Add click listener to marker to show info window
+		marker.addListener("click", () => {
+			infoWindow.open(map, marker);
+		});
+
+		geocoder = new google.maps.Geocoder();
+
+		// Add optimized click listener
+		map.addListener("click", (e) => {
+			placeMarker(e.latLng);
+		});
+
+		// Optimized marker drag listener
+		marker.addListener("dragend", () => {
+			updateLocationStatus(marker.getPosition());
+		});
+
+		// Initialize Places Autocomplete with optimized settings
+		const addressInput = document.getElementById("address");
+		autocomplete = new google.maps.places.Autocomplete(addressInput, {
+			types: ['address'],
+			componentRestrictions: { country: 'in' }
+		});
+
+		autocomplete.addListener("place_changed", () => {
+			const place = autocomplete.getPlace();
+			if (place.geometry) {
+				map.setCenter(place.geometry.location);
+				placeMarker(place.geometry.location);
+			}
+		});
+
+		// Hide loading indicator when map is ready
+		google.maps.event.addListenerOnce(map, 'tilesloaded', function() {
+			document.getElementById("mapLoading").style.display = "none";
+		});
+	}
+
+	function placeMarker(location) {
+		marker.setPosition(location);
+		map.setCenter(location);
+		map.setZoom(15);
+		updateLocationStatus(location);
+		isLocationSet = true;
+		// Show info window when marker is placed
+		infoWindow.open(map, marker);
+	}
+
+	function updateLocationStatus(location) {
+		const lat = location.lat();
+		const lng = location.lng();
+		
+		document.getElementById("latitude").value = lat;
+		document.getElementById("longitude").value = lng;
+		
+		// Optimize geocoding by using a debounced function
+		debouncedGeocode(location);
+	}
+
+	// Debounce geocoding to prevent too many requests
+	let geocodeTimeout;
+	function debouncedGeocode(location) {
+		clearTimeout(geocodeTimeout);
+		geocodeTimeout = setTimeout(() => {
+			geocoder.geocode({ location: location }, (results, status) => {
+				if (status === "OK" && results[0]) {
+					document.getElementById("locationStatus").innerHTML = 
+						`<i class="fas fa-check-circle text-success me-2"></i>Location set: ${results[0].formatted_address}`;
+				} else {
+					document.getElementById("locationStatus").innerHTML = 
+						`<i class="fas fa-map-marker-alt text-primary me-2"></i>Location coordinates: ${location.lat().toFixed(6)}, ${location.lng().toFixed(6)}`;
+				}
+			});
+		}, 500); // Wait 500ms before geocoding
+	}
+
+	function getCurrentLocation() {
+		const currentLocationBtn = document.getElementById("currentLocationBtn");
+		const originalText = currentLocationBtn.innerHTML;
+		
+		if (navigator.geolocation) {
+			currentLocationBtn.disabled = true;
+			currentLocationBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Getting location...';
+			document.getElementById("locationStatus").innerHTML = 
+				'<i class="fas fa-spinner fa-spin me-2"></i>Getting your location...';
+			
+			// Set timeout for geolocation
+			geolocationTimeout = setTimeout(() => {
+				currentLocationBtn.disabled = false;
+				currentLocationBtn.innerHTML = originalText;
+				document.getElementById("locationStatus").innerHTML = 
+					'<i class="fas fa-exclamation-circle text-danger me-2"></i>Location request timed out. Please try again or select location manually.';
+			}, 5000); // Reduced timeout to 5 seconds
+			
+			navigator.geolocation.getCurrentPosition(
+				(position) => {
+					clearTimeout(geolocationTimeout);
+					const location = {
+						lat: position.coords.latitude,
+						lng: position.coords.longitude
+					};
+					placeMarker(location);
+					currentLocationBtn.disabled = false;
+					currentLocationBtn.innerHTML = originalText;
+				},
+				(error) => {
+					clearTimeout(geolocationTimeout);
+					currentLocationBtn.disabled = false;
+					currentLocationBtn.innerHTML = originalText;
+					document.getElementById("locationStatus").innerHTML = 
+						`<i class="fas fa-exclamation-circle text-danger me-2"></i>Error getting location: ${error.message}`;
+				},
+				{
+					enableHighAccuracy: false,
+					timeout: 5000,
+					maximumAge: 300000
+				}
+			);
+		} else {
+			document.getElementById("locationStatus").innerHTML = 
+				'<i class="fas fa-exclamation-circle text-danger me-2"></i>Geolocation is not supported by this browser.';
+		}
+	}
+
+	function searchLocation() {
+		const addressInput = document.getElementById("address");
+		addressInput.focus();
+	}
+
+	function validateForm() {
+		if (!isLocationSet) {
+			alert("Please select a location on the map before submitting.");
+			return false;
+		}
+		return true;
+	}
+
+	// Add image preview functionality
+	document.getElementById('image').addEventListener('change', function(e) {
+		const file = e.target.files[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = function(e) {
+				const preview = document.getElementById('imagePreview');
+				const previewBtn = document.getElementById('imagePreviewBtn');
+				preview.querySelector('img').src = e.target.result;
+				preview.style.display = 'block';
+				previewBtn.style.display = 'block';
+			}
+			reader.readAsDataURL(file);
+		}
+	});
+
+	document.getElementById('imagePreviewBtn').addEventListener('click', function() {
+		const preview = document.getElementById('imagePreview');
+		preview.style.display = preview.style.display === 'none' ? 'block' : 'none';
+	});
+
+	// Add input validation and feedback
+	document.querySelectorAll('input, textarea').forEach(input => {
+		input.addEventListener('focus', function() {
+			this.classList.add('border-primary');
+		});
+		
+		input.addEventListener('blur', function() {
+			this.classList.remove('border-primary');
+		});
+	});
 </script>
+<script src="https://maps.googleapis.com/maps/api/js?key=<%= process.env.GOOGLE_MAPS_API_KEY || 'YOUR_GOOGLE_MAPS_API_KEY' %>&callback=initMap&libraries=places&v=weekly" async defer></script>

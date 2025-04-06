@@ -10,56 +10,123 @@
 		<div class="container-fluid p-4">
 			<div class="row">
 				<div class="col-md-6">
-					<div class="card mb-4">
+					<div class="card mb-4 shadow-sm">
 						<% if(collection.image) { %>
-							<img src="<%= collection.image %>" class="card-img-top" alt="Food Image" style="height: 300px; object-fit: cover;">
+							<img src="<%= collection.image %>" class="card-img-top" alt="Food Image" style="height: 300px; object-fit: cover; border-radius: 8px 8px 0 0;">
 						<% } else { %>
-							<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
+							<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 300px; border-radius: 8px 8px 0 0;">
 								<i class="fas fa-utensils fa-3x text-muted"></i>
 							</div>
 						<% } %>
 						<div class="card-body">
-							<h5 class="card-title"><%= collection.foodType %></h5>
-							<p class="card-text">
-								<strong>Donor:</strong> <%= collection.donor.firstName %> <%= collection.donor.lastName %><br>
-								<strong>Quantity:</strong> <%= collection.quantity %><br>
-								<strong>Cooking Time:</strong> <%= collection.cookingTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %><br>
-								<strong>Address:</strong> <%= collection.address %><br>
-								<strong>Phone:</strong> <%= collection.phone %><br>
-								<strong>Status:</strong> 
+							<div class="d-flex justify-content-between align-items-center mb-3">
+								<h5 class="card-title mb-0"><%= collection.foodType %></h5>
 								<span class="badge bg-<%= collection.status === 'pending' ? 'warning' : 
 									collection.status === 'accepted' ? 'success' : 
 									collection.status === 'rejected' ? 'danger' : 
-									collection.status === 'assigned' ? 'info' : 'secondary' %>">
+									collection.status === 'assigned' ? 'info' : 'secondary' %> fs-6">
 									<%= collection.status %>
 								</span>
-							</p>
-							<% if(collection.donorToAdminMsg) { %>
-								<p class="card-text">
-									<strong>Donor Message:</strong><br>
-									<%= collection.donorToAdminMsg %>
-								</p>
-							<% } %>
-							<% if(collection.status == "assigned" && collection.adminToAgentMsg) { %>
-								<p class="card-text">
-									<strong>Admin Message:</strong><br>
-									<%= collection.adminToAgentMsg %>
-								</p>
-							<% } %>
-							<% if(collection.status == "collected") { %>
-								<p class="card-text">
-									<strong>Collection Time:</strong> <%= collection.collectionTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %>
-								</p>
+							</div>
+							
+							<div class="card-text">
+								<div class="mb-3">
+									<h6 class="text-muted mb-2">Donor Information</h6>
+									<p class="mb-1"><i class="fas fa-user me-2"></i><%= collection.donor.firstName %> <%= collection.donor.lastName %></p>
+									<p class="mb-1"><i class="fas fa-phone me-2"></i><%= collection.phone %></p>
+									<p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i><%= collection.address %></p>
+								</div>
+
+								<div class="mb-3">
+									<h6 class="text-muted mb-2">Collection Details</h6>
+									<p class="mb-1"><i class="fas fa-box me-2"></i><strong>Quantity:</strong> <%= collection.quantity %></p>
+									<p class="mb-1"><i class="fas fa-clock me-2"></i><strong>Cooking Time:</strong> <%= collection.cookingTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %></p>
+								</div>
+
+								<div class="mb-3">
+									<h6 class="text-muted mb-2">Location</h6>
+									<div id="map" style="height: 300px; width: 100%; border-radius: 8px; margin-top: 10px;"></div>
+								</div>
+
+								<% if(collection.donorToAdminMsg) { %>
+									<div class="mb-3">
+										<h6 class="text-muted mb-2">Donor Message</h6>
+										<div class="alert alert-info">
+											<i class="fas fa-comment me-2"></i><%= collection.donorToAdminMsg %>
+										</div>
+									</div>
+								<% } %>
+
+								<% if(collection.adminToAgentMsg) { %>
+									<div class="mb-3">
+										<h6 class="text-muted mb-2">Admin Message</h6>
+										<div class="alert alert-primary">
+											<i class="fas fa-comment-alt me-2"></i><%= collection.adminToAgentMsg %>
+										</div>
+									</div>
+								<% } %>
+							</div>
+						</div>
+						<div class="card-footer bg-white border-top-0">
+							<% if(collection.status == "assigned") { %>
+								<form action="/agent/collection/collected/<%= collection._id %>" method="POST" class="mb-0">
+									<button type="submit" class="btn btn-success btn-lg w-100">
+										<i class="fas fa-check-circle me-2"></i>Mark as Collected
+									</button>
+								</form>
 							<% } %>
 						</div>
-						<% if(collection.status == "assigned") { %>
-							<div class="card-footer">
-								<a href="/agent/collection/collect/<%= collection._id %>" class="btn btn-success">Mark as Collected</a>
-							</div>
-						<% } %>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 </main>
+
+<script>
+	function initMap() {
+		const location = { lat: <%= collection.location.latitude %>, lng: <%= collection.location.longitude %> };
+		const map = new google.maps.Map(document.getElementById("map"), {
+			zoom: 15,
+			center: location,
+			disableDefaultUI: true,
+			zoomControl: true,
+			gestureHandling: 'greedy',
+			styles: [
+				{
+					"featureType": "poi",
+					"elementType": "labels",
+					"stylers": [{ "visibility": "off" }]
+				}
+			]
+		});
+
+		const marker = new google.maps.Marker({
+			position: location,
+			map: map,
+			optimized: true,
+			animation: google.maps.Animation.DROP
+		});
+
+		const infoWindow = new google.maps.InfoWindow({
+			content: `<div class="p-2">
+				<h6 class="mb-1">Collection Details</h6>
+				<p class="mb-1"><i class="fas fa-user me-2"></i><%= collection.donor.firstName %> <%= collection.donor.lastName %></p>
+				<p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i><%= collection.address %></p>
+				<p class="mb-1"><i class="fas fa-phone me-2"></i><%= collection.phone %></p>
+				<p class="mb-1"><i class="fas fa-utensils me-2"></i><%= collection.foodType %></p>
+				<p class="mb-1"><i class="fas fa-box me-2"></i><%= collection.quantity %></p>
+				<p class="mb-0 small text-muted"><i class="fas fa-info-circle me-2"></i>Click marker for directions</p>
+			</div>`
+		});
+
+		// Show info window when marker is clicked
+		marker.addListener("click", () => {
+			infoWindow.open(map, marker);
+		});
+
+		// Show info window by default
+		infoWindow.open(map, marker);
+	}
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=<%= process.env.GOOGLE_MAPS_API_KEY || 'YOUR_GOOGLE_MAPS_API_KEY' %>&callback=initMap" async defer></script>

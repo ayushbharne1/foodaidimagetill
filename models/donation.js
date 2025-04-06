@@ -26,6 +26,16 @@ const donationSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
+	location: {
+		latitude: {
+			type: Number,
+			required: true
+		},
+		longitude: {
+			type: Number,
+			required: true
+		}
+	},
 	phone: {
 		type: Number,
 		required: true

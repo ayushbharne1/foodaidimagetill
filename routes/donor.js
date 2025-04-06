@@ -32,6 +32,10 @@ router.post("/donor/donate", middleware.ensureDonorLoggedIn, upload.single('imag
 			quantity: req.body.quantity,
 			cookingTime: req.body.cookingTime,
 			address: req.body.address,
+			location: {
+				latitude: parseFloat(req.body.latitude),
+				longitude: parseFloat(req.body.longitude)
+			},
 			phone: req.body.phone,
 			donorToAdminMsg: req.body.donorToAdminMsg,
 			status: "pending",

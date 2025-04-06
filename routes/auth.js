@@ -68,9 +68,10 @@ router.get("/auth/login", middleware.ensureNotLoggedIn, (req,res) => {
 router.post("/auth/login", middleware.ensureNotLoggedIn,
 	passport.authenticate('local', {
 		failureRedirect: "/auth/login",
-		failureFlash: true,
-		successFlash: true
+		failureFlash: true
 	}), (req,res) => {
+		// Clear any existing flash messages
+		req.flash('success', 'Welcome back!');
 		res.redirect(req.session.returnTo || `/${req.user.role}/dashboard`);
 	}
 );

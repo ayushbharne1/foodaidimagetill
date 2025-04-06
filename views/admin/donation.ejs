@@ -10,59 +10,87 @@
 		<div class="container-fluid p-4">
 			<div class="row">
 				<div class="col-md-6">
-					<div class="card mb-4">
+					<div class="card mb-4 shadow-sm">
 						<% if(donation.image) { %>
-							<img src="<%= donation.image %>" class="card-img-top" alt="Food Image" style="height: 300px; object-fit: cover;">
+							<img src="<%= donation.image %>" class="card-img-top" alt="Food Image" style="height: 300px; object-fit: cover; border-radius: 8px 8px 0 0;">
 						<% } else { %>
-							<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
+							<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 300px; border-radius: 8px 8px 0 0;">
 								<i class="fas fa-utensils fa-3x text-muted"></i>
 							</div>
 						<% } %>
 						<div class="card-body">
-							<h5 class="card-title"><%= donation.foodType %></h5>
-							<p class="card-text">
-								<strong>Donor:</strong> <%= donation.donor.firstName %> <%= donation.donor.lastName %><br>
-								<strong>Quantity:</strong> <%= donation.quantity %><br>
-								<strong>Cooking Time:</strong> <%= donation.cookingTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %><br>
-								<strong>Address:</strong> <%= donation.address %><br>
-								<strong>Phone:</strong> <%= donation.phone %><br>
-								<strong>Status:</strong> 
+							<div class="d-flex justify-content-between align-items-center mb-3">
+								<h5 class="card-title mb-0"><%= donation.foodType %></h5>
 								<span class="badge bg-<%= donation.status === 'pending' ? 'warning' : 
 									donation.status === 'accepted' ? 'success' : 
 									donation.status === 'rejected' ? 'danger' : 
-									donation.status === 'assigned' ? 'info' : 'secondary' %>">
+									donation.status === 'assigned' ? 'info' : 'secondary' %> fs-6">
 									<%= donation.status %>
 								</span>
-							</p>
-							<% if(donation.donorToAdminMsg) { %>
-								<p class="card-text">
-									<strong>Donor Message:</strong><br>
-									<%= donation.donorToAdminMsg %>
-								</p>
-							<% } %>
-							<% if(donation.status == "assigned") { %>
-								<p class="card-text">
-									<strong>Assigned Agent:</strong> <%= donation.agent.firstName %> <%= donation.agent.lastName %>
-								</p>
-								<% if(donation.adminToAgentMsg) { %>
-									<p class="card-text">
-										<strong>Admin Message:</strong><br>
-										<%= donation.adminToAgentMsg %>
-									</p>
+							</div>
+							
+							<div class="card-text">
+								<div class="mb-3">
+									<h6 class="text-muted mb-2">Donor Information</h6>
+									<p class="mb-1"><i class="fas fa-user me-2"></i><%= donation.donor.firstName %> <%= donation.donor.lastName %></p>
+									<p class="mb-1"><i class="fas fa-phone me-2"></i><%= donation.phone %></p>
+									<p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i><%= donation.address %></p>
+								</div>
+
+								<div class="mb-3">
+									<h6 class="text-muted mb-2">Donation Details</h6>
+									<p class="mb-1"><i class="fas fa-box me-2"></i><strong>Quantity:</strong> <%= donation.quantity %></p>
+									<p class="mb-1"><i class="fas fa-clock me-2"></i><strong>Cooking Time:</strong> <%= donation.cookingTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %></p>
+								</div>
+
+								<div class="mb-3">
+									<h6 class="text-muted mb-2">Location</h6>
+									<div id="map" style="height: 300px; width: 100%; border-radius: 8px; margin-top: 10px;"></div>
+								</div>
+
+								<% if(donation.donorToAdminMsg) { %>
+									<div class="mb-3">
+										<h6 class="text-muted mb-2">Donor Message</h6>
+										<div class="alert alert-info">
+											<i class="fas fa-comment me-2"></i><%= donation.donorToAdminMsg %>
+										</div>
+									</div>
 								<% } %>
-							<% } %>
-							<% if(donation.status == "collected") { %>
-								<p class="card-text">
-									<strong>Collection Time:</strong> <%= donation.collectionTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %>
-								</p>
-							<% } %>
+
+								<% if(donation.status == "assigned") { %>
+									<div class="mb-3">
+										<h6 class="text-muted mb-2">Agent Information</h6>
+										<p class="mb-1"><i class="fas fa-user-tie me-2"></i><%= donation.agent.firstName %> <%= donation.agent.lastName %></p>
+										<% if(donation.adminToAgentMsg) { %>
+											<div class="alert alert-primary mt-2">
+												<i class="fas fa-comment-alt me-2"></i><%= donation.adminToAgentMsg %>
+											</div>
+										<% } %>
+									</div>
+								<% } %>
+
+								<% if(donation.status == "collected") { %>
+									<div class="mb-3">
+										<h6 class="text-muted mb-2">Collection Details</h6>
+										<p class="mb-1"><i class="fas fa-check-circle me-2"></i><strong>Collection Time:</strong> <%= donation.collectionTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %></p>
+									</div>
+								<% } %>
+							</div>
 						</div>
-						<div class="card-footer">
+						<div class="card-footer bg-white border-top-0">
 							<% if(donation.status == "pending") { %>
-								<a href="/admin/donation/accept/<%= donation._id %>" class="btn btn-success me-2">Accept</a>
-								<a href="/admin/donation/reject/<%= donation._id %>" class="btn btn-danger">Reject</a>
+								<div class="d-flex justify-content-between">
+									<a href="/admin/donation/accept/<%= donation._id %>" class="btn btn-success btn-lg">
+										<i class="fas fa-check me-2"></i>Accept
+									</a>
+									<a href="/admin/donation/reject/<%= donation._id %>" class="btn btn-danger btn-lg">
+										<i class="fas fa-times me-2"></i>Reject
+									</a>
+								</div>
 							<% } else if(donation.status == "accepted") { %>
-								<a href="/admin/donation/assign/<%= donation._id %>" class="btn btn-primary">Assign agent</a>
+								<a href="/admin/donation/assign/<%= donation._id %>" class="btn btn-primary btn-lg w-100">
+									<i class="fas fa-user-plus me-2"></i>Assign Agent
+								</a>
 							<% } %>
 						</div>
 					</div>
@@ -71,3 +99,49 @@
 		</div>
 	</div>
 </main>
+
+<script>
+	function initMap() {
+		const location = { lat: <%= donation.location.latitude %>, lng: <%= donation.location.longitude %> };
+		const map = new google.maps.Map(document.getElementById("map"), {
+			zoom: 15,
+			center: location,
+			disableDefaultUI: true,
+			zoomControl: true,
+			gestureHandling: 'greedy',
+			styles: [
+				{
+					"featureType": "poi",
+					"elementType": "labels",
+					"stylers": [{ "visibility": "off" }]
+				}
+			]
+		});
+
+		const marker = new google.maps.Marker({
+			position: location,
+			map: map,
+			optimized: true,
+			animation: google.maps.Animation.DROP
+		});
+
+		const infoWindow = new google.maps.InfoWindow({
+			content: `<div class="p-2">
+				<h6 class="mb-1">Donor Details</h6>
+				<p class="mb-1"><i class="fas fa-user me-2"></i><%= donation.donor.firstName %> <%= donation.donor.lastName %></p>
+				<p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i><%= donation.address %></p>
+				<p class="mb-1"><i class="fas fa-phone me-2"></i><%= donation.phone %></p>
+				<p class="mb-0"><i class="fas fa-utensils me-2"></i><%= donation.foodType %></p>
+			</div>`
+		});
+
+		// Show info window when marker is clicked
+		marker.addListener("click", () => {
+			infoWindow.open(map, marker);
+		});
+
+		// Show info window by default
+		infoWindow.open(map, marker);
+	}
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=<%= process.env.GOOGLE_MAPS_API_KEY || 'YOUR_GOOGLE_MAPS_API_KEY' %>&callback=initMap" async defer></script>
