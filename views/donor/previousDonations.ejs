@@ -1,0 +1,48 @@
+<main>
+	<%- include('../partials/donorSidebar') %>
+	
+	<div id="main-wrapper">
+		<div class="bg-white shadow-sm p-3">
+			<span class="me-3" id="sidebar-toggler-btn"><i class="fas fa-bars"></i></span>
+			<h5 class="m-0 color-theme d-inline-block">Previous Donations</h5>
+		</div>
+		
+		<div class="container-fluid p-4">
+			<div class="row">
+				<% previousDonations.forEach(donation => { %>
+					<div class="col-md-6 col-lg-4 mb-4">
+						<div class="card h-100">
+							<% if(donation.image) { %>
+								<img src="<%= donation.image %>" class="card-img-top" alt="Food Image" style="height: 200px; object-fit: cover;">
+							<% } else { %>
+								<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+									<i class="fas fa-utensils fa-3x text-muted"></i>
+								</div>
+							<% } %>
+							<div class="card-body">
+								<h5 class="card-title"><%= donation.foodType %></h5>
+								<p class="card-text">
+									<strong>Quantity:</strong> <%= donation.quantity %><br>
+									<strong>Cooking Time:</strong> <%= new Date(donation.cookingTime).toLocaleString() %><br>
+									<strong>Collection Time:</strong> <%= new Date(donation.collectionTime).toLocaleString() %><br>
+									<strong>Status:</strong> 
+									<span class="badge bg-success">Collected</span>
+								</p>
+								<% if(donation.agent) { %>
+									<p class="card-text">
+										<strong>Collected by:</strong> <%= donation.agent.firstName %> <%= donation.agent.lastName %>
+									</p>
+								<% } %>
+								<% if(donation.donorToAdminMsg) { %>
+									<p class="card-text">
+										<strong>Your Message:</strong> <%= donation.donorToAdminMsg %>
+									</p>
+								<% } %>
+							</div>
+						</div>
+					</div>
+				<% }) %>
+			</div>
+		</div>
+	</div>
+</main>

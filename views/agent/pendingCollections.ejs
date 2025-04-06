@@ -1,0 +1,59 @@
+<main>
+	<%- include('../partials/agentSidebar') %>
+	
+	<div id="main-wrapper">
+		<div class="bg-white shadow-sm p-3">
+			<span class="me-3" id="sidebar-toggler-btn"><i class="fas fa-bars"></i></span>
+			<h5 class="m-0 color-theme d-inline-block">Pending Collections</h5>
+		</div>
+		
+		<div class="container-fluid p-4">
+			<div class="row">
+				<% pendingCollections.forEach((donation, index) => { %>
+					<div class="col-md-6 col-lg-4 mb-4">
+						<div class="card h-100">
+							<% if(donation.image) { %>
+								<img src="<%= donation.image %>" class="card-img-top" alt="Food Image" style="height: 200px; object-fit: cover;">
+							<% } else { %>
+								<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+									<i class="fas fa-utensils fa-3x text-muted"></i>
+								</div>
+							<% } %>
+							<div class="card-body">
+								<h5 class="card-title"><%= donation.foodType %></h5>
+								<p class="card-text">
+									<strong>Donor:</strong> <%= donation.donor.firstName %> <%= donation.donor.lastName %><br>
+									<strong>Quantity:</strong> <%= donation.quantity %><br>
+									<strong>Address:</strong> <%= donation.address %><br>
+									<strong>Phone:</strong> <%= donation.phone %><br>
+									<strong>Cooking Time:</strong> <%= new Date(donation.cookingTime).toLocaleString() %><br>
+									<strong>Status:</strong> 
+									<span class="badge bg-<%= donation.status === 'pending' ? 'warning' : 
+										donation.status === 'accepted' ? 'success' : 
+										donation.status === 'rejected' ? 'danger' : 
+										donation.status === 'assigned' ? 'info' : 'secondary' %>">
+										<%= donation.status %>
+									</span>
+								</p>
+								<% if(donation.donorToAdminMsg) { %>
+									<p class="card-text">
+										<strong>Donor Message:</strong> <%= donation.donorToAdminMsg %>
+									</p>
+								<% } %>
+								<% if(donation.adminToAgentMsg) { %>
+									<p class="card-text">
+										<strong>Admin Message:</strong> <%= donation.adminToAgentMsg %>
+									</p>
+								<% } %>
+							</div>
+							<div class="card-footer">
+								<a href="/agent/collection/view/<%= donation._id %>" class="btn btn-primary me-2">View Details</a>
+								<a href="/agent/collection/collect/<%= donation._id %>" class="btn btn-success">Collect</a>
+							</div>
+						</div>
+					</div>
+				<% }) %>
+			</div>
+		</div>
+	</div>
+</main>

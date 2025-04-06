@@ -1,0 +1,65 @@
+<main>
+	<%- include('../partials/agentSidebar') %>
+	
+	<div id="main-wrapper">
+		<div class="bg-white shadow-sm p-3">
+			<span class="me-3" id="sidebar-toggler-btn"><i class="fas fa-bars"></i></span>
+			<h5 class="m-0 color-theme d-inline-block">Collection</h5>
+		</div>
+		
+		<div class="container-fluid p-4">
+			<div class="row">
+				<div class="col-md-6">
+					<div class="card mb-4">
+						<% if(collection.image) { %>
+							<img src="<%= collection.image %>" class="card-img-top" alt="Food Image" style="height: 300px; object-fit: cover;">
+						<% } else { %>
+							<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
+								<i class="fas fa-utensils fa-3x text-muted"></i>
+							</div>
+						<% } %>
+						<div class="card-body">
+							<h5 class="card-title"><%= collection.foodType %></h5>
+							<p class="card-text">
+								<strong>Donor:</strong> <%= collection.donor.firstName %> <%= collection.donor.lastName %><br>
+								<strong>Quantity:</strong> <%= collection.quantity %><br>
+								<strong>Cooking Time:</strong> <%= collection.cookingTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %><br>
+								<strong>Address:</strong> <%= collection.address %><br>
+								<strong>Phone:</strong> <%= collection.phone %><br>
+								<strong>Status:</strong> 
+								<span class="badge bg-<%= collection.status === 'pending' ? 'warning' : 
+									collection.status === 'accepted' ? 'success' : 
+									collection.status === 'rejected' ? 'danger' : 
+									collection.status === 'assigned' ? 'info' : 'secondary' %>">
+									<%= collection.status %>
+								</span>
+							</p>
+							<% if(collection.donorToAdminMsg) { %>
+								<p class="card-text">
+									<strong>Donor Message:</strong><br>
+									<%= collection.donorToAdminMsg %>
+								</p>
+							<% } %>
+							<% if(collection.status == "assigned" && collection.adminToAgentMsg) { %>
+								<p class="card-text">
+									<strong>Admin Message:</strong><br>
+									<%= collection.adminToAgentMsg %>
+								</p>
+							<% } %>
+							<% if(collection.status == "collected") { %>
+								<p class="card-text">
+									<strong>Collection Time:</strong> <%= collection.collectionTime.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short"}) %>
+								</p>
+							<% } %>
+						</div>
+						<% if(collection.status == "assigned") { %>
+							<div class="card-footer">
+								<a href="/agent/collection/collect/<%= collection._id %>" class="btn btn-success">Mark as Collected</a>
+							</div>
+						<% } %>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</main>

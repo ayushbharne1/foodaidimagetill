@@ -1,0 +1,322 @@
+<section class="hero">
+	<div class="hero-video">
+		<video autoplay muted loop src="https://wastenofood.org/wp-content/uploads/2021/05/WasteNoFood.mp4"></video>
+	</div>
+	<div class="hero-content">
+		<p>WE MAKE IT EASY TO</p>
+		<h1>Find, Secure and <br> Deliver Food</h1>
+		<p>We are a non-profit enabling the exchange of excess food <br>from the food industry to those who need it most
+		</p>
+		<button class="cta-button"><a href="./components/donate.html">Donate Food</a></button>
+		<button class="cta-button"><a href="./components/donate.html">Secure Food</a></button>
+	</div>
+</section>
+
+<!-- Chatbot Container -->
+<div id="chatbot-container" class="chatbot-container">
+    <div class="chat-header">
+        <h3>Food Aid Assistant</h3>
+        <button id="close-chat">×</button>
+    </div>
+    <div id="chat-messages" class="chat-messages"></div>
+    <div class="chat-input-container">
+        <input type="text" id="chat-input" placeholder="Type your message...">
+        <button id="send-button">Send</button>
+    </div>
+</div>
+
+<button id="chat-toggle" class="chat-toggle-button">
+    <i class="fas fa-comments"></i>
+    <span id="popup-message" class="popup-message">Any Query?</span>
+</button>
+
+<style>
+.chatbot-container {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    width: 400px;
+    height: 500px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+}
+#close-chat{
+	border-radius: 40px;
+	color: #ffffff;
+	border: none;
+	background: transparent;
+	font-size: 2vw;
+}
+.chat-header {
+    padding: 10px;
+    background: #3f51b5;
+    color: white;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.chat-input-container {
+    padding: 10px;
+    border-top: 1px solid #eee;
+    display: flex;
+}
+
+#chat-input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 5px;
+}
+
+#send-button {
+    padding: 8px 15px;
+    background: #3f51b5;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.chat-toggle-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #3f51b5;
+    color: white;
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+.popup-message {
+    position: absolute;
+    top: -45px;
+    right: 0;
+    background: #fff;
+    color: #3f51b5;
+    padding: 8px 15px;
+    border-radius: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    font-size: 16px;
+    white-space: nowrap;
+    width: 150px;
+    text-align: center;
+    animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+.message {
+    margin: 5px 0;
+    padding: 8px 12px;
+    border-radius: 15px;
+    max-width: 80%;
+}
+
+.user-message {
+    background: #e3f2fd;
+    margin-left: auto;
+    border-radius: 15px 15px 0 15px;
+}
+
+.bot-message {
+    background: #f5f5f5;
+    margin-right: auto;
+    border-radius: 15px 15px 15px 0;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatToggle = document.getElementById('chat-toggle');
+    const chatContainer = document.getElementById('chatbot-container');
+    const closeChat = document.getElementById('close-chat');
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
+    const chatMessages = document.getElementById('chat-messages');
+    const popupMessage = document.getElementById('popup-message');
+
+    // Create audio element for notification sound
+    const notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+
+    // Bot responses
+    const responses = {
+        'hello': 'Hi! How can I help you today?',
+        'hi': 'Hello! How can I assist you?',
+        'how to donate': 'To donate food, click the "Donate Food" button and sign up as a donor. You can choose your donor type (restaurant, hotel, farm, grocery store, or individual). After signing up, you can specify food type, quantity, cooking time, and pickup location.',
+        'how to receive food': 'To receive food donations, click "Secure Food" and register as a receiver. You can register as an NGO, shelter, food bank or individual. Once verified, you\'ll be able to view and request available donations.',
+        'how to receive': 'To receive food donations, click "Secure Food" and register as a receiver. You can register as an NGO, shelter, food bank or individual. Once verified, you\'ll be able to view and request available donations.',
+        'donation process': 'The donation process is simple:\n1. Sign up as a donor\n2. Fill out the donation form with food details\n3. Our admin will review your donation\n4. An agent will be assigned to collect the food\n5. Track the status in your dashboard',
+        'receiving process': 'Here\'s how to receive donations:\n1. Register as a receiver\n2. Get verified by our admin\n3. View available donations\n4. Request the food you need\n5. An agent will deliver to your location',
+        'what can i donate': 'You can donate:\n- Cooked food from restaurants/hotels\n- Fresh produce from farms\n- Grocery items\n- Packaged foods\nThe food must be safe for consumption and properly stored.',
+        'who can receive': 'Our food aid is available to:\n- NGOs and charities\n- Homeless shelters\n- Food banks\n- Individuals in need\nVerification may be required.',
+        'food safety': 'We ensure food safety by:\n- Tracking cooking time\n- Quick collection and delivery\n- Proper food storage guidelines\n- Quality checks by our agents',
+        'contact': 'You can reach us at:\nEmail: info@wastefoodmanagement.com\nPhone: +123 456 789\nOr use the contact form on our website',
+        'about us': 'We are a food aid management system that connects food donors with those in need. Our goal is to reduce food waste while helping people access nutritious meals.',
+        'help': 'I can help you with:\n- Donation process\n- Receiving donations\n- Food safety guidelines\n- Registration process\n- Contact information\n- General queries',
+        'how to login': 'To login:\n1. Click the "Login" button in the top menu\n2. Enter your registered email address\n3. Enter your password\n4. Click Submit\nIf you forgot your password, please contact support.',
+        'how to register': 'To register:\n1. Click "Signup" in the top menu\n2. Fill in your personal details (name, email, password)\n3. Select your role (donor/receiver)\n4. Choose your specific type (e.g. restaurant, NGO etc)\n5. Click Submit\nAn admin will verify your account.',
+        'forgot password': 'If you forgot your password, please contact our support team at info@wastefoodmanagement.com. We\'ll help you reset it.',
+        'default': 'I\'m not sure about that specific query. Please try rephrasing or contact our support team at info@wastefoodmanagement.com for more detailed assistance.'
+    };
+
+    // Toggle chat visibility
+    chatToggle.addEventListener('click', () => {
+        chatContainer.style.display = chatContainer.style.display === 'none' ? 'flex' : 'none';
+        popupMessage.style.display = 'none';
+        if(chatContainer.style.display === 'flex') {
+            notificationSound.play();
+        }
+    });
+
+    closeChat.addEventListener('click', () => {
+        chatContainer.style.display = 'none';
+        popupMessage.style.display = 'block';
+    });
+
+    // Send message function
+    function sendMessage() {
+        const message = chatInput.value.trim().toLowerCase();
+        if (message) {
+            // Add user message
+            addMessage(chatInput.value, 'user');
+            notificationSound.play();
+            
+            // Get bot response
+            setTimeout(() => {
+                const response = responses[message] || responses['default'];
+                addMessage(response, 'bot');
+                notificationSound.play();
+            }, 500);
+
+            chatInput.value = '';
+        }
+    }
+
+    // Add message to chat
+    function addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', `${sender}-message`);
+        messageDiv.textContent = text;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Event listeners
+    sendButton.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Initial bot message
+    setTimeout(() => {
+        addMessage('Hello! How can I help you today?', 'bot');
+        notificationSound.play();
+    }, 1000);
+});
+</script>
+
+<section class="mission">
+    <div class="mission-container">
+        <h2>Our Mission</h2>
+        <div class="mission-content">
+            <div class="mission-text">
+                <p>our mission is to combat food waste while addressing hunger and food insecurity by creating a seamless, efficient platform that connects donors with acceptors. We aim to reduce the environmental impact of food waste and provide a sustainable solution to ensure surplus food reaches those who need it most. By fostering a community-driven ecosystem, we seek to promote generosity, collaboration, and resourcefulness, making it easy for individuals, businesses, and organizations to share excess food in a timely and effective manner. 
+					
+					Through innovation and the power of modern technology, our platform streamlines the process of food donation, ensuring that food is distributed quickly and efficiently. We are committed to reducing food wastage, lowering transportation costs, and promoting social equity, all while contributing to a circular economy. As we grow, our mission extends to empowering communities, advocating for sustainability, and influencing positive change in food systems worldwide. </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page3">
+	<h1>How It Works</h1>
+	<div class="cards">
+		<div class="card1 card">
+			<div class="card1-img">
+				<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6IyAWYB8K8q9foqsQNUCjVmGPyWiDB8TcSA&s" alt="">
+			</div>
+			<div class="page3-text">
+				<h3>Food is Donated</h3>
+				<h7>Farms, restaurants, cafeterias, hotels, stadiums, and grocery stores post excess food in under a minute on the Waste No Food app.</h7>
+			</div>
+		</div>
+		<div class="card1 card">
+			<div class="card1-img">
+				<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzn509ZnAMTUeAeNu6WE4-M-EflpqfiI7byQ&s" alt="">
+			</div>
+			<div class="page3-text">
+				<h3>Food is Secured</h3>
+				<h7>Pre-vetted charities immediately get notified about food donations and can claim any donations they can use to serve hungry clients.</h7>
+			</div>
+		</div>
+		<div class="card1 card">
+			<div class="card1-img">
+				<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7rh9ONAfanicbpJEBwNEc4WWgKWvMiFB4sg&s" alt="">
+			</div>
+			<div class="page3-text">
+				<h3>Food Is Picked Up</h3>
+				<h7>The charity, or a network of volunteers, picks up the food and serves it to hungry people.</h7>
+			</div>
+		</div>
+	</div>
+</section>
+
+<footer>
+	<div class="footer-container">
+		<div class="footer-section about">
+			<h3>About Us</h3>
+			<p>We are dedicated to reducing food waste and helping those in need. Through our community-driven efforts, we aim to create a sustainable, hunger-free world.</p>
+		</div>
+
+		<div class="footer-section links">
+			<h3>Quick Links</h3>
+			<ul>
+				<li><a href="index.html">Home</a></li>
+				<li><a href="about.html">About Us</a></li>
+				<li><a href="mission.html">Our Mission</a></li>
+				<li><a href="volunteer.html">Volunteer</a></li>
+				<li><a href="contact.html">Contact Us</a></li>
+			</ul>
+		</div>
+
+		<div class="footer-section contact">
+			<h3>Contact Us</h3>
+			<p><i class="fas fa-map-marker-alt"></i> 123 Food Street, Bhopal</p>
+			<p><i class="fas fa-phone"></i> +123 456 789</p>
+			<p><i class="fas fa-envelope"></i> info@foodAid.com</p>
+		</div>
+
+		<div class="footer-section social">
+			<h3>Follow Us</h3>
+			<a href="#"><i class="fab fa-facebook"></i></a>
+			<a href="#"><i class="fab fa-twitter"></i></a>
+			<a href="#"><i class="fab fa-instagram"></i></a>
+		</div>
+	</div>
+	<div class="footer-bottom">
+		<p>&copy; 2024 Waste Food Management. All Rights Reserved.</p>
+	</div>
+</footer>
